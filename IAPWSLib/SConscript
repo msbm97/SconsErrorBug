@@ -1,0 +1,42 @@
+#!/bin/python
+
+######################################################
+#  SConscript file for main TRACE source code
+######################################################
+import os
+import sys
+import fnmatch
+
+Import('*')
+
+######################################################
+#  Retrieve list of files that need to be compiled
+######################################################
+srcs = ['CrunchM.f90']
+
+env = Environment(ENV=os.environ)
+env['LINK'] = fcompiler
+env['F90'] = fcompiler
+env['F90PATH'] = [common_build_dir]
+env['FORTRANMODDIRPREFIX'] = '-J'
+env['FORTRANMODDIR'] = env.Dir(iapws_build_dir)
+
+
+if platform=='darwin':
+  env['RPATHPREFIX']='-Wl,-rpath '
+  env.Append(SHLINKFLAGS = '-install_name ' + iapws_build_dir + '/\"${TARGET.file}\"')
+#  env.Append(SHLINKFLAGS = '-install_name @rpath/\"${TARGET.file}\"')
+
+######################################################
+#  Build the library
+######################################################
+if (projectType=='shared'):
+    iapws_lib = env.SharedLibrary(target = "IAPWSLib",
+                                  source = [srcs],
+                                  LIBS = ['common'],
+                                  LIBPATH = [common_build_dir],
+                                  RPATH = [common_build_dir])
+else:
+    iapws_lib = env.StaticLibrary(target = "IAPWSLib", source = srcs)
+
+Return("iapws_lib")

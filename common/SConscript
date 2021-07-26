@@ -1,0 +1,36 @@
+#!/bin/python
+""" SConscript for common module library"""
+
+######################################################
+#  SConscript file for the common module library
+######################################################
+import os
+import sys
+import fnmatch
+
+Import('*')
+
+######################################################
+#  Retrieve list of files that need to be compiled
+######################################################
+srcs = ['ErrorInterfaceM.f90']
+env = Environment(ENV=os.environ)
+
+env['F90'] = fcompiler
+env['LINK'] = fcompiler
+env['FORTRANMODDIRPREFIX'] = '-J'
+env['FORTRANMODDIR'] = env.Dir(common_build_dir)
+
+
+
+if platform=='darwin':
+  env['RPATHPREFIX']='-Wl,-rpath '
+  env.Append(SHLINKFLAGS = '-install_name ' + common_build_dir + '/\"${TARGET.file}\"')
+
+if (projectType=='exe'):
+    common_lib = env.StaticLibrary(target = "common", source = srcs)
+else:
+    common_lib = env.SharedLibrary(target = "common", source = srcs)
+
+
+Return("common_lib")

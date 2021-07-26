@@ -1,0 +1,49 @@
+#!/bin/python
+""" SConscript for main TRACE source code"""
+
+######################################################
+#  SConscript file for main TRACE source code
+######################################################
+import os
+import sys
+import fnmatch
+
+Import('*')
+
+######################################################
+#  Retrieve list of files that need to be compiled
+######################################################
+if projectType=='exe':
+   srcs = ['error.f90','trac_exe.f90']
+else:
+    srcs = ['error.f90','trac_lib.f90']
+
+env = Environment(ENV=os.environ)
+env['F90'] = fcompiler
+env['LINK'] = fcompiler
+env['F90PATH'] = [iapws_build_dir,
+                        common_build_dir]
+
+env['FORTRANMODDIRPREFIX'] = '-J'
+env['FORTRANMODDIR'] = env.Dir(trace_build_dir)
+
+
+
+if platform=='darwin':
+  env['RPATHPREFIX']='-Wl,-rpath '
+  env.Append(SHLINKFLAGS = '-install_name ' + trace_build_dir + '/\"${TARGET.file}\"')
+#  env.Append(SHLINKFLAGS = '-install_name @rpath/\"${TARGET.file}\"')
+
+######################################################
+#  Build the library
+######################################################
+
+if (projectType=='exe'):
+   trace = env.Program(target = "trace", source = [srcs, iapws_target, common_target])
+elif (projectType=='shared'):
+   trace = env.SharedLibrary(target = "trace", source = [srcs],
+                                               LIBS = ['common', 'IAPWSLib'],
+                                               LIBPATH = [common_build_dir, iapws_build_dir],
+                                               RPATH = [common_build_dir, iapws_build_dir])
+#
+Return("trace")
